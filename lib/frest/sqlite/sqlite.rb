@@ -1,22 +1,32 @@
 require 'sqlite3'
 require 'securerandom'
+require 'chain_context'
 
-class LocalStore
-  attr_accessor :db
+module FREST
+  class SQLite < BaseContext
+    def resolve(
+        path:,
+        context: NullContext.new
+    )
 
-  def initialize(
-      name:,
-      location: "db/#{name}.frest.sqlite"
-  )
-    @db = SQLite3::Database.new(location)
-    setup
-  end
+      @@db.execute <<-SQL
+      SELECT content
+      SQL
+    end
 
-  private
+    def meta(
+        path:,
+        context: NullContext.new
+    )
+    end
 
-  def setup
-    db.define_function('uuid') {SecureRandom.uuid}
-    db.execute <<-SQL
+    private
+
+    def self.setup
+      @@db = SQLite3::Database.new "db/frest.sqlite"
+
+      @@db.define_function('uuid') {SecureRandom.uuid}
+      @@db.execute <<-SQL
       CREATE TABLE IF NOT EXISTS
         types(
           id PRIMARY KEY DEFAULT (UUID()),
@@ -49,6 +59,9 @@ class LocalStore
           CHECK
             parent_id <> child_id
         );
-    SQL
+      SQL
+    end
   end
 end
+
+FREST::SQLite.setup
