@@ -12,17 +12,30 @@ module FREST
           path   = req.path
           params = req.params
 
-          result = context.resolve(
-            path:    path,
-            context: HashContext.new(params)
-          )
-          return ['200', {'Content-Type' => 'text/html'}, [*result]]
+          result, type = get_asset(path)
+          if result
+            return ['200', {'Content-Type' => type}, [result]]
+          else
+            result = context.resolve(
+                path:    path,
+                context: HashContext.new(params)
+            )
+            return ['200', {'Content-Type' => 'text/html'}, [*result]]
+          end
         end
       end
 
       def resolve_locally(
-        path: [],
-        context: NullContext.new      )
+          path: [],
+          context: NullContext.new)
+      end
+
+      def get_asset path
+        if path == '/favicon.ico'
+          return File.read(File.join(File.dirname(__FILE__), 'assets/favicon.ico')), 'image/svg+xml'
+        else
+          return nil
+        end
       end
     end
   end

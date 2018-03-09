@@ -60,7 +60,7 @@ class RubyFn
 
   def initialize **meta, &block
     @meta = meta
-    @fn  = block
+    @fn   = block
   end
 
   def call **args
