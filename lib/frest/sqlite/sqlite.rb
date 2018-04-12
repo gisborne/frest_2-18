@@ -9,6 +9,21 @@ module FREST
         context: NullContext.new
     )
 
+      result = @@db.execute <<-SQL
+      SELECT
+        content
+      FROM
+        contents
+      WHERE
+        id =
+      SQL
+    end
+
+    def resolve_strong(
+        path:,
+        context: NullContext.new
+    )
+
       @@db.execute <<-SQL
       SELECT content
       SQL
@@ -26,7 +41,7 @@ module FREST
       @@db = SQLite3::Database.new "db/frest.sqlite"
 
       @@db.define_function('uuid') {SecureRandom.uuid}
-      @@db.execute <<-SQL
+      @@db.execute_batch <<-SQL
         CREATE TABLE IF NOT EXISTS
           types(
             id PRIMARY KEY DEFAULT (UUID()),
@@ -35,7 +50,7 @@ module FREST
           );
         
         CREATE TABLE IF NOT EXISTS
-          content(
+          contents(
             id PRIMARY KEY DEFAULT (UUID()),
             content,
             type NOT NULL REFERENCES types(id),
@@ -44,20 +59,20 @@ module FREST
           );
         
         CREATE TABLE IF NOT EXISTS
-          types_inheritance(
-            parent_id NOT NULL REFERENCES content(id),
-            child_id NOT NULL REFERENCES content(id)
+          types_inheritance (
+          parent_id NOT NULL REFERENCES content (id),
+          child_id  NOT NULL REFERENCES content (id),
         
-            PRIMARY KEY(
-              parent_id,
-              child_id
-            )
-        
+          PRIMARY KEY (
+            parent_id,
+            child_id
+          )
             ON CONFLICT
-              IGNORE
+            IGNORE,
         
-            CHECK
-              parent_id <> child_id
+          CHECK (
+            parent_id <> child_id
+          )
         );
       SQL
     end

@@ -7,48 +7,33 @@ module FREST
       @chain = contexts
     end
 
+    def head
+      @chain.head rescue NullContext.new
+    end
+
+    def tail
+      @chain.tail rescue NullContext.new
+    end
+
     def resolve(
-        path: [],
-        context: NullContext.new
+      mode: DEFAULT_MODES,
+      path: [],
+      **extra
     )
-      return (
-        resolve_strong(
-          path: path
-        ) ||
-        context.resolve(
-            path: path
-        ) ||
-        resolve_weak(
-            path: path
-        )
-      )
-    end
-
-    def resolve_strong(
-        path: []
-    )
-      @chain.each do |c|
-        result = c.resolve_strong(
-            path: path
-        )
-        return result if result
-        nil
-      end
-
-      return nil
-    end
-
-    def resolve_weak(
-        path: []
-    )
-      @chain.reverse_each do |c|
-        return result = c.resolve_weak(
+      [*mode].each do |m|
+        @chain.each do |c|
+          result = c.resolve(
+            mode:    m,
             path:    path,
-            context: context
-        ) if result
+            **extra
+          )
+
+          return result if result
+        end
       end
 
-      return nil
+      # no resolution
+      nil
     end
   end
 end

@@ -1,5 +1,7 @@
 module FREST
   class BaseContext
+    DEFAULT_MODES = ['strong', 'weak']
+
     def initialize *a, **b
       # do nothing
     end
@@ -9,15 +11,15 @@ module FREST
     end
 
     def resolve(
-      path: [],
-      context: nil
+        path: [],
+        context: nil
     )
       raise NotImplementedError
     end
 
     def meta(
-      path: [],
-      context: nil
+        path: [],
+        context: nil
     )
       raise NotImplementedError
     end
