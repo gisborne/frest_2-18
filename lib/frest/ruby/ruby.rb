@@ -9,42 +9,55 @@ module FREST
     end
 
     def resolve(
-      mode:,
+      match: {},
+      modes: DEFAULT_MODES,
+      context: NullContext.new,
       path: nil,
+      args: {},
       **extra
     )
-      if path
-        fn = [
-          *load_from_path(
+      [*modes].each do |mode|
+        if match && ! match.empty?
+          fn = matching_fns(
             mode: mode,
-            path: path,
-            **extra
+            **match
           )
-        ]
-      else
-        fn = matching_fns(
-          mode: mode,
-          **extra
-        )
+        else
+          if path
+            fn = [
+              *load_from_path(
+                mode: mode,
+                path: path,
+                **extra
+              )
+            ]
+          end
+        end
+
+        if fn && fn.length > 0
+          return fn.first.call(
+            context: context,
+            **args
+          )
+        end
       end
 
-      if fn
-        fn.first.call(**extra)
-      else
-        nil
-      end
-
+      nil
     end
 
     private
 
     def load_from_path(
-      mode:,
+      mode: nil,
       path:,
       **_
     )
-      fn_name     = fix_path(path).first
-      actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_name}.rb")
+      fn_name = fix_path(path).first
+      if fn_name =~ /\.rb$/
+        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_name}")
+      else
+        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_name}.rb")
+      end
 
       thread          = Thread.current
       thread[:new_fn] = nil
@@ -56,38 +69,38 @@ module FREST
       rescue LoadError
       end
 
-      return fn if fn.meta[:mode] == mode
+      return fn if !mode || fn.meta[:mode] == mode
       nil
     end
 
     def matching_fns(
+      src: @fns_src,
+      prev_path: [],
       **args
     )
-      all_fns.select do |fn|
-        fn.matches(
-          **args
-        )
+      result = []
+      Dir.each_child(src) do |f|
+        if File.directory? f
+          result += all_fns(
+            prev_path: prev_path + f,
+            src:       f
+          ).to_a
+        else
+          loaded = load_from_path(
+            path: prev_path.join('/') + f,
+            **args
+          )
+          if loaded&.matches?(
+            **args
+          )
+            result << loaded
+          end
+        end
       end
+
+      result.flatten
     end
   end
-
-  def all_fns(
-    src: @fns_src
-  )
-    result = []
-    src.each_child do |f|
-      if File.directory? f
-        result << all_fns(
-          src: f
-        )
-      else
-        result << f
-      end
-    end
-
-    result.flatten
-  end
-
 
 
   module_function
@@ -105,10 +118,12 @@ class RubyFn
     @fn   = block
   end
 
-  def matches(**args)
+  def matches?(
+    **matches
+  )
     if m = @meta[:match]
       begin
-        return m.call(**args)
+        return m.call(**matches)
       rescue
         nil
       end

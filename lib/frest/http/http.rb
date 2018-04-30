@@ -17,12 +17,13 @@ module FREST
             return ['200', { 'Content-Type' => type }, [result]]
           else
             result = context.resolve(
-              tag:         'presenter',
-              result_type: 'html',
-              params:      params,
-              limit:       1,
-              source:      {
-                path: path
+              match: {
+                tag:         'presenter',
+                result_type: 'html'
+              },
+              args:  {
+                path:   path,
+                params: params
               }
             )
 
@@ -39,8 +40,7 @@ module FREST
 
       def get_asset path
         if path == '/favicon.ico'
-          return \
-              File.read(File.join(File.dirname(__FILE__), 'assets/favicon.ico')), 'image/ico'
+          return File.read(File.join(File.dirname(__FILE__), 'assets/favicon.ico')), 'image/ico'
         end
       end
     end

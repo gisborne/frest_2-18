@@ -1,23 +1,29 @@
 # root
 FREST.defn(
-  'mode'        => 'strong',
-  'arg_types'   => {
-    'source' => 'timeline'
+  mode:        'strong',
+  arg_types:   {
+    source: 'timeline'
   },
-  'tags'        => ['presenter'],
-  'result_type' => 'html',
-  'matches'     => ->(
-    mode: nil,
-      tag: nil,
-      result_type: nil,
-      source: {}
-  ) {
+  tags:        ['presenter'],
+  result_type: 'html',
+  match:       ->(
+                 matches: {},
+                   mode: nil,
+                   tag: nil,
+                   result_type: nil
+               ) {
     mode == 'strong' &&
-      tag == 'presenter' &&
-      result_type == 'html' &&
-      source.has_key?('path')
+    [*tag].include?('presenter') &&
+    result_type == 'html'
   }
 ) do |
-**c|
+context: NullContext.new,
+  path: '',
+  params: {},
+  **c|
+  result = context.resolve(
+    path: path,
+    args: params
+  )
   'Timeline goes here'
 end

@@ -5,6 +5,9 @@ require 'chain_context'
 module FREST
   class SQLite < BaseContext
     def resolve(
+      match: {},
+      args: {},
+        mode: DEFAULT_MODES,
         path:,
         context: NullContext.new
     )
