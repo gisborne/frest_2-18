@@ -11,7 +11,8 @@ module FREST
         path:,
         context: NullContext.new
     )
-
+      #TODO: Finish this
+return nil
       result = @@db.execute <<-SQL
       SELECT
         content

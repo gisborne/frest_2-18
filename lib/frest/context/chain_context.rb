@@ -20,7 +20,6 @@ module FREST
       path: [],
       **extra
     )
-      path = path.split('/') if path.is_a? String
       [*mode].each do |m|
         @chain.each do |c|
           result = c.resolve(

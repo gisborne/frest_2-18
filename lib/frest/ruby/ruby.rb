@@ -12,7 +12,7 @@ module FREST
       match: {},
       modes: DEFAULT_MODES,
       context: NullContext.new,
-      path: nil,
+      path: [],
       args: {},
       **extra
     )
@@ -48,15 +48,19 @@ module FREST
     private
 
     def load_from_path(
-      mode: nil,
       path:,
+      mode: nil,
       **_
     )
-      fn_name = fix_path(path).first
+      return nil if path.length == 0 || (path.length == 1 && path.first == '')
+
+      fn_path = relative_path(path)
+      fn_name = fn_path.last
+
       if fn_name =~ /\.rb$/
-        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_name}")
+        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_path.join('/')}")
       else
-        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_name}.rb")
+        actual_path = File.join(File.dirname(__FILE__), "../../../ruby/#{fn_path.join('/')}.rb")
       end
 
       thread          = Thread.current
@@ -69,7 +73,7 @@ module FREST
       rescue LoadError
       end
 
-      return fn if !mode || fn.meta[:mode] == mode
+      return fn if fn && (!mode || fn.meta[:mode] == mode)
       nil
     end
 
@@ -87,7 +91,7 @@ module FREST
           ).to_a
         else
           loaded = load_from_path(
-            path: prev_path.join('/') + f,
+            path: prev_path + [f],
             **args
           )
           if loaded&.matches?(
@@ -99,6 +103,14 @@ module FREST
       end
 
       result.flatten
+    end
+
+    def relative_path(path)
+      if path.first == ''
+        path[1..-1]
+      else
+        path
+      end
     end
   end
 

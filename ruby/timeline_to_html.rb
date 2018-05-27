@@ -8,19 +8,20 @@ FREST.defn(
   result_type: 'html',
   match:       ->(
                  matches: {},
-                   mode: nil,
-                   tag: nil,
-                   result_type: nil
+                 mode: nil,
+                 tag: nil,
+                 result_type: nil
                ) {
-    mode == 'strong' &&
-    [*tag].include?('presenter') &&
-    result_type == 'html'
-  }
+                    mode == 'strong' &&
+                    [*tag].include?('presenter') &&
+                    result_type == 'html'
+                  }
 ) do |
-context: NullContext.new,
-  path: '',
-  params: {},
+  context:  NullContext.new,
+  path:     [],
+  params:   {},
   **c|
+
   result = context.resolve(
     path: path,
     args: params

@@ -12,10 +12,23 @@ module FREST
       path        = args[:path]
       return nil unless path
 
-      target_path = ASSET_ROOT + path.gsub(/^\//, '')
+      target_path = ASSET_ROOT + cleaned_path(path).join('/')
 
       result      = File.read target_path if File.exist?(target_path) && ! File.directory?(target_path)
       result
+    end
+
+
+    private
+
+    def cleaned_path path
+      if path.length == 0
+        path
+      elsif path.first == ''
+        path[1..-1]
+      else
+        path
+      end
     end
   end
 end

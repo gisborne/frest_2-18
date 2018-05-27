@@ -3,10 +3,10 @@ require_relative '../shared/local_store.rb'
 
 class ContentStore < LocalStore
   def get(
-      path: '',
+      path: [],
       content:
   )
-    return get_root unless path != ''
+    return get_root unless path != []
     db.get_first_value <<-SQL
         SELECT
           content
