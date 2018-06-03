@@ -12,19 +12,14 @@ module FREST
         @template = File.read('lib/frest/http/templates/base_template.mustache')
 
         Rack::Handler::WEBrick.run ->(env) do
-          req    = Rack::Request.new(env)
-          path   = path_to_array(req.path)
-          params = req.params
+          req          = Rack::Request.new(env)
 
           result = context.resolve(
             match: {
               tag:         'presenter',
               result_type: 'html'
             },
-            args:  {
-              path:   path,
-              params: params
-            }
+            args:  fn_args(req)
           )
 
           if result
@@ -52,6 +47,18 @@ module FREST
 
 
       private
+
+      def fn_args req
+        path   = path_to_array(req.path)
+        params = req.params
+
+        params['_method'] = 'options' if req.options?
+
+        {
+          path:   path,
+          params: params
+        }
+      end
 
       def lay_out content:, content_type:
         return [content] unless content_type == 'text/html'

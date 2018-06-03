@@ -24,10 +24,6 @@ module FREST
       raise NotImplementedError
     end
 
-    def resolve_locally
-      raise NotImplementedError
-    end
-
     class << self
       def start
         #do nothing
