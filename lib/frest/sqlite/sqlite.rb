@@ -7,9 +7,10 @@ module FREST
     def resolve(
       match: {},
       args: {},
-        mode: DEFAULT_MODES,
-        path:,
-        context: NullContext.new
+      mode: DEFAULT_MODES,
+      path:,
+      context: NullContext.new,
+      **extra
     )
       #TODO: Finish this
 return nil
@@ -21,6 +22,12 @@ return nil
       WHERE
         id =
       SQL
+    end
+
+    def resolve_locally(
+      **_
+    )
+      NullContext.new
     end
 
     def resolve_strong(

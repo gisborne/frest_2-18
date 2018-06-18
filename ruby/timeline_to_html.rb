@@ -26,5 +26,5 @@ FREST.defn(
     path: path,
     args: params
   )
-  'Timeline goes here'
+  '<div data-frest-id=>Timeline goes here<div>'
 end

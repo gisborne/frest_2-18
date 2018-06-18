@@ -18,6 +18,12 @@ module FREST
       result
     end
 
+    def resolve_options(
+      **_
+    )
+      NullContext.new
+    end
+
 
     private
 

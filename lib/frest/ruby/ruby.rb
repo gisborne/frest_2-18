@@ -45,6 +45,19 @@ module FREST
       nil
     end
 
+    def resolve_options(
+      match: {},
+      modes: DEFAULT_MODES,
+      context: NullContext.new,
+      path: [],
+      args: {},
+      **extra
+    )
+    'WORKS AGAIN'
+    end
+
+
+
     private
 
     def load_from_path(
