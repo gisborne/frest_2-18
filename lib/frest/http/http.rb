@@ -1,24 +1,31 @@
 #!ruby
-require 'rack'
-
 module FREST
   class HTTP < BaseContext
-    require 'rack'
+    # require 'rack'
+    # require 'goliath'
     require 'mustache'
     require 'faye'
-    require 'permessage_deflate'
+    require 'thin'
+    # require 'permessage_deflate'
 
     class << self
       def start(
         context:
       )
-      @template = File.read('lib/frest/http/templates/base_template.mustache')
+        @template = File.read('lib/frest/http/templates/base_template.mustache')
+
+        Faye::WebSocket.load_adapter 'thin'
 
         app = Rack::Builder.new do
           use Rack::CommonLogger
           use Rack::ShowExceptions
           use Faye::RackAdapter, mount: '/ws', timeout: 5 do |bayeux|
-            bayeux.add_websocket_extension(PermessageDeflate)
+            @bayeux = bayeux
+            # bayeux.add_websocket_extension(PermessageDeflate)
+            bayeux.on(:subscribe) {|id, channel|
+              p "subscribe #{id} #{channel}"}
+            bayeux.on(:publish) {|id, channel, data|
+              p "publish #{id} #{channel} #{data}"}
           end
 
           run ->(env) do
@@ -46,7 +53,19 @@ module FREST
           end
         end
 
-        Rack::Handler::WEBrick.run app
+        Rack::Handler.get('thin').run app, Port: 8080
+
+
+        require 'eventmachine'
+
+        EM.run {
+        client = Faye::Client.new('http://localhost:8080/ws')
+
+          client.subscribe('/test') do |message|
+            p message.inspect
+          end
+
+        }
       end
 
       def normal_web(
@@ -71,7 +90,8 @@ module FREST
           return [
             '200',
             {
-              'Content-Type' => content_type
+              'Content-Type' => content_type,
+              'Content-Security-Policy' => "default-src 'self'"
             },
             lay_out(
               content:      result,
