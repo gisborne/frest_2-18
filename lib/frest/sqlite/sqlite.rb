@@ -13,7 +13,7 @@ module FREST
       **extra
     )
       #TODO: Finish this
-return nil
+      return nil
       result = @@db.execute <<-SQL
       SELECT
         content
@@ -31,8 +31,8 @@ return nil
     end
 
     def resolve_strong(
-        path:,
-        context: NullContext.new
+      path:,
+      context: NullContext.new
     )
 
       @@db.execute <<-SQL
@@ -41,9 +41,18 @@ return nil
     end
 
     def meta(
-        path:,
-        context: NullContext.new
+      path:,
+      context: NullContext.new
     )
+    end
+
+    def resolve_options(
+      context:,
+      mode:,
+      path:,
+      **c
+    )
+
     end
 
     private
@@ -51,7 +60,7 @@ return nil
     def self.setup
       @@db = SQLite3::Database.new "db/frest.sqlite"
 
-      @@db.define_function('uuid') {SecureRandom.uuid}
+      @@db.define_function('uuid') { SecureRandom.uuid }
       @@db.execute_batch <<-SQL
         CREATE TABLE IF NOT EXISTS
           types(
@@ -85,6 +94,16 @@ return nil
             parent_id <> child_id
           )
         );
+        
+        DROP VIEW IF EXISTS content_types;
+        CREATE VIEW
+            content_types AS
+            SELECT
+              c.id,
+              c.type
+            FROM
+              contents c JOIN
+              types t ON t.id = c.type;
       SQL
     end
   end

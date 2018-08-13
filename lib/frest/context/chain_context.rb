@@ -19,52 +19,19 @@ module FREST
       mode: DEFAULT_MODES,
       path: [],
       method: 'GET',
-      **extra
+      **c
     )
-      return result if (
-        result = resolve_options(
+      if method == 'OPTIONS'
+        return resolve_options(
           mode:   mode,
           path:   path,
           method: method,
-          **extra
+          **c
         )
-      )
-
-      with_chain(mode) do |c, m|
-        result = c.resolve(
-          context: self,
-          mode:    m,
-          path:    path,
-          **extra
-        )
-
-        return result if result
       end
 
-      # no resolution
-      nil
-    end
-
-
-    private
-
-    def resolve_options(
-      mode:,
-      path:,
-      method:,
-      args:,
-      **c
-    )
-
-      return nil unless path = after_options_path(
-        path:   path,
-        method: method,
-        args:   args,
-        **c
-      )
-
-      with_chain(mode) do |c, m|
-        result = c.resolve_options(
+      with_chain(mode) do |ch, m|
+        result = ch.resolve(
           context: self,
           mode:    m,
           path:    path,
@@ -74,8 +41,41 @@ module FREST
         return result if result
       end
 
+      # no resolution
       nil
     end
+
+    def resolve_options(
+      mode:,
+      path:,
+      method:,
+      **c
+    )
+
+      return nil unless path = after_options_path(
+        mode:   mode,
+        path:   path,
+        method: method,
+        **c
+      )
+
+      with_chain(mode) do |ch, m|
+        result = ch.resolve_options(
+          context: self,
+          mode:    m,
+          path:    path,
+          method:  method,
+          **c
+        )
+
+        return result if result
+      end
+
+      nil
+    end
+
+
+    private
 
     def after_options_path(
       path:,
@@ -98,12 +98,12 @@ module FREST
       modes = [*mode]
       modes.each do |m|
         if mode == 'strong'
-          @chain.each do |c|
-            yield c, m
+          @chain.each do |ch|
+            yield ch, m
           end
         else
-          @chain.reverse.each do |c|
-            yield c, m
+          @chain.reverse.each do |ch|
+            yield ch, m
           end
         end
       end
