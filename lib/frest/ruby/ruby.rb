@@ -9,6 +9,36 @@ module FREST
     end
 
     def resolve(
+      **args
+    )
+      fn = resolve_internal(**args)
+      if fn && fn.length > 0
+        return fn.first.call(
+          context: context,
+          **args
+        )
+      end
+    end
+
+
+    def resolve_options(
+      **args
+    )
+      fn = resolve_internal(**args)
+
+      if fn && fn.length > 0
+        fn.map do
+          # what to return here?
+          # how to indicate result type, both of the group, and of the elements?
+        end
+      end
+    end
+
+
+
+    private
+
+    def resolve_internal(
       match: {},
       modes: DEFAULT_MODES,
       context: NullContext.new,
@@ -34,31 +64,11 @@ module FREST
           end
         end
 
-        if fn && fn.length > 0
-          return fn.first.call(
-            context: context,
-            **args
-          )
-        end
+        return fn
       end
 
       nil
     end
-
-    def resolve_options(
-      match: {},
-      modes: DEFAULT_MODES,
-      context: NullContext.new,
-      path: [],
-      args: {},
-      **extra
-    )
-    'WORKS AGAIN'
-    end
-
-
-
-    private
 
     def load_from_path(
       path:,

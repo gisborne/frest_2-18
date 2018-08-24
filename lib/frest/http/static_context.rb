@@ -21,7 +21,7 @@ module FREST
     def resolve_options(
       **_
     )
-      NullContext.new
+      nil
     end
 
 
